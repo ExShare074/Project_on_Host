@@ -1,7 +1,6 @@
 {% extended "base.html" %}
 {% block content %}
-    <h1>Игра</h1>
-
-
-
+    <h1>Кликер</h1>
+    <P>Количество кликов: {{ current_user.clicks }}</P>
+    <a href='{{ url_for("click") }}'>Нажми</a>
 {% endblock %}
