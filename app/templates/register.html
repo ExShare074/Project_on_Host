@@ -1,22 +1,33 @@
 {% extends "base.html" %}
 {% block content %}
-    <h1>Вход</h1>
-    <form method="POST" action="{{ url_for('login.html')}}">
+<div class="clicker-container">
+    <h2>Регистрация</h2>
+    <form method="POST" action="{{ url_for('register') }}">
         {{ form.hidden_tag() }}
         <div>
-            {{ form.username.label }}
-            {{ form.username }}
+            {{ form.username.label }}<br>
+            {{ form.username() }}<br>
+            {% for error in form.username.errors %}
+                <span class="error">{{ error }}</span><br>
+            {% endfor %}
         </div>
         <div>
-            {{ form.password.label }}
-            {{ form.password }}
-        </div>
-         <div>
-            {{ form.confirm_password.label }}
-            {{ form.confirm_password }}
+            {{ form.password.label }}<br>
+            {{ form.password() }}<br>
+            {% for error in form.password.errors %}
+                <span class="error">{{ error }}</span><br>
+            {% endfor %}
         </div>
         <div>
-            {{ form.submit }}
+            {{ form.confirm_password.label }}<br>
+            {{ form.confirm_password() }}<br>
+            {% for error in form.confirm_password.errors %}
+                <span class="error">{{ error }}</span><br>
+            {% endfor %}
+        </div>
+        <div>
+            {{ form.submit(class="clicker-button") }}
         </div>
     </form>
+</div>
 {% endblock %}

@@ -16,7 +16,7 @@ def register():
     form = RegistrationForm()
     if form.validate_on_submit():
         hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
-        user = User(username=form.username, password=hashed_password)
+        user = User(username=form.username.data, password=hashed_password)
         db.session.add(user)
         db.session.commit()
         flash('Вы зарегистрированы!', 'success')
@@ -30,11 +30,11 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
-    if user and bcrypt.generate_password_hash(user.password, form.password.data):
-        login_user(user)
-        return redirect(url_for('index'))
-    else:
-        flash('Неверное имя пользователя или пароль', 'danger')
+        if user and bcrypt.check_password_hash(user.password, form.password.data):
+            login_user(user)
+            return redirect(url_for('index'))
+        else:
+            flash('Неверное имя пользователя или пароль', 'danger')
     return render_template('login.html', form=form)
 
 @app.route('/logout', methods=['GET', 'POST'])
@@ -47,4 +47,12 @@ def logout():
 def click():
     current_user.clicks += 1
     db.session.commit()
+    return redirect(url_for('index'))
+
+@app.route('/reset')
+@login_required
+def reset():
+    current_user.clicks = 0
+    db.session.commit()
+    flash('Счетчик сброшен!', 'success')
     return redirect(url_for('index'))
