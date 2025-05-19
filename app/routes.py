@@ -3,6 +3,7 @@ from app import app, db, bcrypt
 from app.models import User
 from app.forms import RegistrationForm, LoginForm
 from flask_login import login_user, current_user, logout_user, login_required
+from datetime import datetime, timedelta
 
 @app.route('/')
 @login_required
@@ -30,9 +31,23 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
-        if user and bcrypt.check_password_hash(user.password, form.password.data):
-            login_user(user)
-            return redirect(url_for('index'))
+        if user:
+            now = datetime.utcnow()
+            if user.is_locked_until and user.is_locked_until > now:
+                flash(f'Слишком много попыток. Попробуйте позже: {user.is_locked_until.strftime("%H:%M:%S")}', 'danger')
+            elif bcrypt.check_password_hash(user.password, form.password.data):
+                user.login_attempts = 0
+                user.is_locked_until = None
+                db.session.commit()
+                login_user(user)
+                return redirect(url_for('index'))
+            else:
+                user.login_attempts += 1
+                user.last_attempt = now
+                if user.login_attempts >= 5:
+                    user.is_locked_until = now + timedelta(minutes=5)
+                db.session.commit()
+                flash('Неверное имя пользователя или пароль', 'danger')
         else:
             flash('Неверное имя пользователя или пароль', 'danger')
     return render_template('login.html', form=form)
