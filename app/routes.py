@@ -54,5 +54,14 @@ def click():
 def reset():
     current_user.clicks = 0
     db.session.commit()
-    flash('Счетчик сброшен!', 'success')
+    flash('Счётчик сброшен!', 'success')
     return redirect(url_for('index'))
+
+@app.errorhandler(404)
+def not_found_error(error):
+    return render_template('404.html'), 404
+
+@app.errorhandler(500)
+def internal_error(error):
+    db.session.rollback()
+    return "Внутренняя ошибка сервера", 500
